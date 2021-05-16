@@ -1,6 +1,6 @@
 literals = [
             ".", ",", ";",
-            "=", 
+            "=",
             "!",
             ">", "<",
             "+", "-", "*", "/", "^",
@@ -107,4 +107,4 @@ if __name__ == "__main__":
         if tok.type == "MODULE":
             print("")
         print(repr(tok.type), repr(tok.value), end='')
-    
+

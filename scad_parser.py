@@ -213,9 +213,9 @@ def p_function(p):
         params = p[4]
 
     p[0] = ScadFunction(p[2], params)
-        
+
 def p_module(p):
-    '''module : MODULE ID "(" opt_parameter_list ")" statement 
+    '''module : MODULE ID "(" opt_parameter_list ")" statement
        '''
 
     params = None
