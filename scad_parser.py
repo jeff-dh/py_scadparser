@@ -1,3 +1,5 @@
+from enum import Enum
+
 from ply import lex, yacc
 
 #workaround relative imports.... make this module runable as script
@@ -6,41 +8,46 @@ if __name__ == "__main__":
 else:
     from .scad_tokens import *
 
-SCAD_GLOBAL_VAR = 0
-SCAD_MODULE = 1
-SCAD_FUNCTION = 2
-SCAD_USE = 3
-SCAD_INCLUDE = 4
+class ScadTypes(Enum):
+    GLOBAL_VAR = 0
+    MODULE = 1
+    FUNCTION = 2
+    USE = 3
+    INCLUDE = 4
 
-class ScadUse:
+class ScadObject:
+    def __init__(self, scadType):
+        self.scadType = scadType
+
+    def getType(self):
+        return self.scadType
+
+class ScadUse(ScadObject):
     def __init__(self, filename):
+        super().__init__(ScadTypes.USE)
         self.filename = filename
 
-    def getType(self):
-        return SCAD_USE
+class ScadInclude(ScadObject):
+    def __init__(self, filename):
+        super().__init__(ScadTypes.INCLUDE)
+        self.filename = filename
 
-class ScadInclude(ScadUse):
-    def getType(self):
-        return SCAD_INCLUDE
-
-class ScadGlobalVar:
+class ScadGlobalVar(ScadObject):
     def __init__(self, name):
+        super().__init__(ScadTypes.GLOBAL_VAR)
         self.name = name
 
-    def getType(self):
-        return SCAD_GLOBAL_VAR
-
-class ScadModule:
+class ScadModule(ScadObject):
     def __init__(self, name, parameters):
+        super().__init__(ScadTypes.MODULE)
         self.name = name
         self.parameters = parameters
 
-    def getType(self):
-        return SCAD_MODULE
-
-class ScadFunction(ScadModule):
-    def getType(self):
-        return SCAD_FUNCTION
+class ScadFunction(ScadObject):
+    def __init__(self, name, parameters):
+        super().__init__(ScadTypes.FUNCTION)
+        self.name = name
+        self.parameters = parameters
 
 precedence = (
     ('nonassoc', "THEN"),
@@ -235,11 +242,11 @@ def parseFile(scadFile):
     functions = []
     globalVars = []
 
-    appendObject = { SCAD_MODULE : lambda x: modules.append(x),
-                     SCAD_FUNCTION: lambda x: functions.append(x),
-                     SCAD_GLOBAL_VAR: lambda x: globalVars.append(x),
-                     SCAD_USE: lambda x: uses.append(x),
-                     SCAD_INCLUDE: lambda x: includes.append(x),
+    appendObject = { ScadTypes.MODULE : lambda x: modules.append(x),
+                     ScadTypes.FUNCTION: lambda x: functions.append(x),
+                     ScadTypes.GLOBAL_VAR: lambda x: globalVars.append(x),
+                     ScadTypes.USE: lambda x: uses.append(x),
+                     ScadTypes.INCLUDE: lambda x: includes.append(x),
     }
 
     for i in  parser.parse(f.read(), lexer=lexer):
