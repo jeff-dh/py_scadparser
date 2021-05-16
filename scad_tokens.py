@@ -71,11 +71,7 @@ def t_comments2(t):
 
 def t_whitespace(t):
     r'\s'
-    pass
-
-def t_newline(t):
-    r'\n+'
-    t.lexer.lineno += len(t.value)
+    t.lexer.lineno += t.value.count("\n")
 
 def t_ID(t):
     r'[0-9]*[a-zA-Z_][a-zA-Z_0-9]*'
