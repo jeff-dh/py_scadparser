@@ -1,6 +1,6 @@
 from enum import Enum
 
-class ScadAstTypes(Enum):
+class ScadTypes(Enum):
     GLOBAL_VAR = 0
     MODULE = 1
     FUNCTION = 2
@@ -8,29 +8,19 @@ class ScadAstTypes(Enum):
     INCLUDE = 4
     PARAMETER = 5
 
-class ScadAstObject:
+class ScadObject:
     def __init__(self, scadType):
         self.scadType = scadType
 
     def getType(self):
         return self.scadType
 
-class ScadUse(ScadAstObject):
-    def __init__(self, filename):
-        super().__init__(ScadAstTypes.USE)
-        self.filename = filename
-
-class ScadInclude(ScadAstObject):
-    def __init__(self, filename):
-        super().__init__(ScadAstTypes.INCLUDE)
-        self.filename = filename
-
-class ScadGlobalVar(ScadAstObject):
+class ScadGlobalVar(ScadObject):
     def __init__(self, name):
-        super().__init__(ScadAstTypes.GLOBAL_VAR)
+        super().__init__(ScadTypes.GLOBAL_VAR)
         self.name = name
 
-class ScadCallable(ScadAstObject):
+class ScadCallable(ScadObject):
     def __init__(self, name, parameters, scadType):
         super().__init__(scadType)
         self.name = name
@@ -41,17 +31,18 @@ class ScadCallable(ScadAstObject):
 
 class ScadModule(ScadCallable):
     def __init__(self, name, parameters):
-        super().__init__(name, parameters, ScadAstTypes.MODULE)
+        super().__init__(name, parameters, ScadTypes.MODULE)
 
 class ScadFunction(ScadCallable):
     def __init__(self, name, parameters):
-        super().__init__(name, parameters, ScadAstTypes.FUNCTION)
+        super().__init__(name, parameters, ScadTypes.FUNCTION)
 
-class ScadParameter(ScadAstObject):
+class ScadParameter(ScadObject):
     def __init__(self, name, optional=False):
-        super().__init__(ScadAstTypes.PARAMETER)
+        super().__init__(ScadTypes.PARAMETER)
         self.name = name
         self.optional = optional
 
     def __repr__(self):
-        return self.name + "=..." if self.optional else  self.name
+        return self.name + "=None" if self.optional else  self.name
+

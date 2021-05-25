@@ -6,7 +6,7 @@ literals = [
             "+", "-", "*", "/", "^",
             "?", ":",
             "[", "]", "{", "}", "(", ")",
-            "%",
+            "%", "#"
 ]
 
 reserved = {
@@ -16,9 +16,13 @@ reserved = {
                 'function' : 'FUNCTION',
                 'if'     : 'IF',
                 'else'   : 'ELSE',
-                'for'    : 'FOR',
                 'let'    : 'LET',
+                'assert' : 'ASSERT',
+                'for'    : 'FOR',
                 'each'   : 'EACH',
+                'true'   : 'TRUE',
+                'false'  : 'FALSE',
+                'echo'   : 'ECHO',
 }
 
 tokens = [
@@ -42,7 +46,7 @@ bad_escape = r"""([\\][^a-zA-Z._~^!=&\^\-\\?'"x0-9])"""
 escape_sequence = r"""(\\("""+simple_escape+'|'+decimal_escape+'|'+hex_escape+'))'
 escape_sequence_start_in_string = r"""(\\[0-9a-zA-Z._~!=&\^\-\\?'"])"""
 string_char = r"""([^"\\\n]|"""+escape_sequence_start_in_string+')'
-t_STRING = '"'+string_char+'*"'
+t_STRING = '"'+string_char+'*"' + " | " + "'" +string_char+ "*'"
 
 t_EQUAL = "=="
 t_GREATER_OR_EQUAL = ">="
@@ -52,8 +56,6 @@ t_AND = "\&\&"
 t_OR = "\|\|"
 
 t_FILENAME = r'<[a-zA-Z_0-9/\\\.-]*>'
-
-t_ignore = "#$"
 
 def t_eat_escaped_quotes(t):
     r"\\\""
@@ -74,17 +76,17 @@ def t_whitespace(t):
     t.lexer.lineno += t.value.count("\n")
 
 def t_ID(t):
-    r'[0-9]*[a-zA-Z_][a-zA-Z_0-9]*'
+    r'[\$]?[0-9]*[a-zA-Z_][a-zA-Z_0-9]*'
     t.type = reserved.get(t.value,'ID')
     return t
 
 def t_NUMBER(t):
-    r'\d*\.?\d+'
+    r'[0-9]*\.?\d+([eE][-\+]\d+)?'
     t.value = float(t.value)
     return t
 
 def t_error(t):
-    print(f'Illegal character ({t.lexer.lineno}) "{t.value[0]}"')
+    print(f'py_scadparser: Illegal character: {t.lexer.filename}({t.lexer.lineno}) "{t.value[0]}"')
     t.lexer.skip(1)
 
 if __name__ == "__main__":
@@ -97,9 +99,10 @@ if __name__ == "__main__":
 
     p = Path(sys.argv[1])
     f = p.open()
-    lex.lex()
-    lex.input(''.join(f.readlines()))
-    for tok in iter(lex.token, None):
+    lexer = lex.lex()
+    lexer.filename = p.as_posix()
+    lexer.input(''.join(f.readlines()))
+    for tok in iter(lexer.token, None):
         if tok.type == "MODULE":
             print("")
         print(repr(tok.type), repr(tok.value), end='')
