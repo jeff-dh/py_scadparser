@@ -57,18 +57,14 @@ t_OR = "\|\|"
 
 t_FILENAME = r'<[a-zA-Z_0-9/\\\.-]*>'
 
-def t_eat_escaped_quotes(t):
-    r"\\\""
-    pass
-
 def t_comments1(t):
     r'(/\*(.|\n)*?\*/)'
     t.lexer.lineno += t.value.count("\n")
     pass
 
 def t_comments2(t):
-    r'//.*[\n\']?'
-    t.lexer.lineno += 1
+    r'//.*[\n]?'
+    t.lexer.lineno += t.value.count("\n")
     pass
 
 def t_whitespace(t):
